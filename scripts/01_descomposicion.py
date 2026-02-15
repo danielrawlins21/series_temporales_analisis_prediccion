@@ -10,6 +10,7 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 CSV_PATH = "data/raw/raw_sales.csv"
 OUT_SERIE = "imagenes/serie_original.png"
 OUT_DECOMP = "imagenes/decomposition.png"
+OUT_SERIE_CSV = "data/processed/serie_mensual.csv"
 
 # =========================
 # 1) CARGAR Y PREPARAR DATA
@@ -37,7 +38,13 @@ serie = (
 serie = serie.interpolate(limit_direction="both")
 
 # =========================
-# 3) PLOT SERIE ORIGINAL
+# 3) GUARDAR SERIE PROCESADA
+# =========================
+serie.to_csv(OUT_SERIE_CSV, header=True)
+print(f"✅ Serie mensual guardada en: {OUT_SERIE_CSV}")
+
+# =========================
+# 4) PLOT SERIE ORIGINAL
 # =========================
 plt.figure(figsize=(10, 4))
 plt.plot(serie)
@@ -50,7 +57,7 @@ plt.savefig(OUT_SERIE, dpi=200)
 plt.close()
 
 # =========================
-# 4) DESCOMPOSICIÓN
+# 5) DESCOMPOSICIÓN
 # =========================
 result = seasonal_decompose(serie, model="multiplicative", period=12)
 
