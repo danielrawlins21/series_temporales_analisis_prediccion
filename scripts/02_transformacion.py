@@ -20,32 +20,43 @@ OUT_DECOMP_TRANSF = "imagenes/decomposition_transformada.png"
 # =========================
 def transform_log_diff_shift(serie: pd.Series, eps: float = 1e-6):
     """
-    log -> diff(1) -> shift para no-negatividad.
-    Devuelve: (serie_transformada, params)
+    1) Log transform para estabilizar varianza
+    2) Diferenciación de orden 1 para reducir no-estacionariedad en media
+    3) Shift para evitar valores negativos (opcional, pero lo aplicamos como pediste)
+    
+    Retorna:
+      - serie_transf: serie lista para modelado/partición
+      - params: diccionario con parámetros necesarios para revertir transformaciones
     """
-    s = serie.copy()
-
-    # Asegurar positividad antes del log (en precios normalmente no hace falta, pero lo dejamos robusto)
-    if (s <= 0).any():
-        adj = abs(float(s.min())) + eps
-        s = s + adj
+    # Seguridad: evitar log(0) (si hubiese ceros). En precios normalmente no aplica, pero lo dejamos robusto.
+    serie_pos = serie.copy()
+    if (serie_pos <= 0).any():
+        # Ajuste mínimo para positividad
+        adj = abs(serie_pos.min()) + eps
+        serie_pos = serie_pos + adj
     else:
         adj = 0.0
 
-    s_log = np.log(s)
-    s_log_diff = s_log.diff(1).dropna()
+    # 1) Log
+    serie_log = np.log(serie_pos)
 
-    # Shift para evitar negativos (como pediste)
-    min_diff = float(s_log_diff.min())
+    # 2) Diferencia orden 1
+    serie_log_diff = serie_log.diff(1).dropna()
+
+    # 3) Shift para no-negatividad
+    min_diff = float(serie_log_diff.min())
     shift = (-min_diff) + eps if min_diff <= 0 else 0.0
-    s_ready = s_log_diff + shift
+    serie_ready = serie_log_diff + shift
 
     params = {
         "eps": eps,
         "add_to_make_positive_before_log": float(adj),
         "shift_after_diff": float(shift),
+        "last_log_value_before_diff": float(serie_log.iloc[-1]),  # útil para invertir predicciones
+        "last_timestamp": serie_log.index[-1].isoformat(),
     }
-    return s_ready, params
+
+    return serie_ready, params
 
 
 def plot_decomposition(result, outpath: str, title: str):
@@ -126,11 +137,11 @@ serie_transf.to_csv("data/processed/serie_transformada.csv")
 with open("data/processed/transform_params.json", "w") as f:
     json.dump(params, f, indent=4)
 
-print("📁 Archivos adicionales guardados:")
+print("Archivos adicionales guardados:")
 print(" - data/processed/serie_transformada.csv")
 print(" - data/processed/transform_params.json")
 
-print("✅ Listo. Figuras guardadas:")
+print("Listo. Figuras guardadas:")
 print(f" - {OUT_SERIE_TRANSF}")
 print(f" - {OUT_DECOMP_TRANSF}")
 print("Parámetros de transformación:", params)

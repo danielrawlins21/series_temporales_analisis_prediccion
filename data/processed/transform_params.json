@@ -1,5 +1,7 @@
 {
     "eps": 1e-06,
     "add_to_make_positive_before_log": 0.0,
-    "shift_after_diff": 0.16148846989111196
+    "shift_after_diff": 0.16148846989111196,
+    "last_log_value_before_diff": 13.314359900696479,
+    "last_timestamp": "2019-07-01T00:00:00"
 }
