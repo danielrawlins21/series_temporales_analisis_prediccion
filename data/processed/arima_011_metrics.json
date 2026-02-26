@@ -1,0 +1,12 @@
+{
+    "model": "ARIMA(1,0,1)",
+    "use_log": true,
+    "log_shift": 0.0,
+    "mae_original_scale": 57527.324751711865,
+    "rmse_original_scale": 60133.12556638762,
+    "aic": -325.8523967704076,
+    "bic": -308.9307073767774,
+    "hqic": -318.9784086609238,
+    "nobs_train": 138,
+    "nobs_test": 12
+}
